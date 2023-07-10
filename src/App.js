@@ -26,27 +26,32 @@ const App = () => {
 
   const fetchWeatherData = () => {
     if (location.lat && location.lon) {
-      fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=755d2152d181aa2d39f36ecc581b95bd`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const convertedToC = Math.round(data.main.temp - 273.15);
-          setTemperature(convertedToC);
-          if (convertedToC < 20) {
-            setTemperatureColor("cold");
-          } else if (convertedToC > 30) {
-            setTemperatureColor("hot");
-          } else {
-            setTemperatureColor("medium");
-          }
-          setLoading(false);
-        })
-        .catch((error) => {
-          setError("Failed to fetch weather data.");
-          setLoading(false);
-        });
+      fetchWeatherWithRateLimit();
     }
+  };
+
+  const fetchWeatherWithRateLimit = () => {
+    const API_KEY = "cf9cac72d0483b52ae13472b097f8ecc";
+    const API_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=${API_KEY}`;
+
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        const convertedToC = Math.round(data.main.temp - 273.15);
+        setTemperature(convertedToC);
+        if (convertedToC < 20) {
+          setTemperatureColor("cold");
+        } else if (convertedToC > 30) {
+          setTemperatureColor("hot");
+        } else {
+          setTemperatureColor("medium");
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError("Failed to fetch weather data.");
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -54,7 +59,12 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    fetchWeatherData();
+    const delay = 1000 / 60; // Delay between API calls (60 calls per minute)
+    const timer = setInterval(fetchWeatherData, delay);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [location]);
 
   if (loading) {
