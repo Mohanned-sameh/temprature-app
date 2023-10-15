@@ -82,9 +82,6 @@ const App = () => {
           {temperature}&#176;C
         </div>
       </div>
-      <div className="location-display-container">
-        {/* Display location information here */}
-      </div>
     </div>
   );
 };
